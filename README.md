@@ -1,6 +1,9 @@
 # tracy-short-tv
 一个基于开源项目 GoFilm 前端页面整改的短视频网站,目前只有前端，数据是通过现有的api请求获取，比较适合需要搭建短视频网站但需要的前端页面的人
 
+**项目演视地址
+https://video.fuuuzzy.cn
+
 ## 简介
 项目采用vite + vue作为前端技术栈, 使用 ElementPlus 作为UI 框架进行开发
 
