@@ -1,0 +1,258 @@
+<template>
+  <div class="c_content" v-if="d.list">
+    <template v-if="d.list.length > 0">
+      <div class="item" :class="{ 'box-hover': hoveredIndex === index }"
+           @mouseover="hoveredIndex = index"
+           @mouseout="hoveredIndex = -99"
+           v-for="(item,index) in d.list"
+           :style="{width: `calc(${d.width-1}%)`}">
+        <div v-if="item.id != -99">
+          <a :href="item.link ? item.link : `/play?id=${item.id}`" class="default_image link_content">
+            <div class="tag_group">
+              <span class="cus_tag ">{{ item.release_date ? item.release_date.slice(0, 4) : 'not found' }}</span>
+              <span v-if="item.tags_en_list" class="cus_tag ">{{ item.tags_en_list[1] }}</span>
+            </div>
+            <span class="cus_remark hidden-md-and-up">{{ item.desc }}</span>
+            <img :src="item.poster_hd" :alt="item.title_en?.split('[')[0]" @error="handleImg"/>
+            <img v-if="item.is_free == 1" class="hot-tag" src="../../assets/image/img_tag_hot.png" alt="not found"/>
+          </a>
+          <a :href="`/play?id=${item.id}`" class="content_text_tag">{{ item.title_en }}</a>
+          <!--<span class="cus_remark hidden-md-and-down">{{ item.desc }}</span>-->
+        </div>
+      </div>
+    </template>
+    <el-empty v-if="d.list.length <= 0" style="padding: 10px 0;margin: 0 auto" description="not data"/>
+  </div>
+</template>
+
+<script setup lang="ts">
+import {defineProps, reactive, ref, watchEffect} from 'vue'
+
+const props = defineProps({
+  list: Array,
+  col: Number,
+})
+const d = reactive({
+  col: 0,
+  list: Array<any>,
+  width: 0,
+})
+
+const hoveredIndex = ref<any>(-99)
+
+// 图片加载失败事件
+const handleImg = (e: Event) => {
+  e.target.style.display = "none"
+}
+
+// 监听父组件传递的参数的变化
+watchEffect(() => {
+  // 首先获取当前设备类型
+  const userAgent = navigator.userAgent.toLowerCase();
+  let isMobile = /mobile|android|iphone|ipad|phone/i.test(userAgent)
+  // 如果是PC, 为防止flex布局最后一行元素不足出现错位, 使用空元素补齐list
+  let c = isMobile ? 3 : props.col ? props.col : 0
+  let l: any = props.list
+  let len = l.length
+  d.width = isMobile ? 31 : Math.floor(100 / c)
+  if (len % c != 0) {
+    for (let i = 0; i < c - len % c; i++) {
+      let temp: any = {...l[0] as any}
+      temp.id = -99
+      l.push(temp)
+    }
+  }
+  d.list = l
+})
+
+
+</script>
+
+<style scoped>
+.default_image {
+  background: url("/src/assets/image/not_image.png");
+  background-size: cover;
+}
+
+:deep(.el-empty) {
+  --el-empty-fill-color-1: rgba(155, 73, 231, 0.72);
+  --el-empty-fill-color-2: #67d9e891;
+  --el-empty-fill-color-3: rgb(106 19 187 / 72%);
+  --el-empty-fill-color-4: #67d9e8;
+  --el-empty-fill-color-5: #5abcc9;
+  --el-empty-fill-color-6: #9fb2d9;
+  --el-empty-fill-color-7: #61989f;
+  --el-empty-fill-color-8: #697dc5;
+  --el-empty-fill-color-9: rgb(43 51 63 / 44%);
+}
+
+/*wrap*/
+@media (max-width: 768px) {
+
+  /*展示区域*/
+  .c_content {
+    width: 100%;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-between;
+  }
+
+  .hot-tag {
+    position: absolute;
+    width: 50px;
+    height: 15px;
+    left: 0;
+  }
+
+  .c_content .item {
+    /*  flex-basis: calc(33% - 7px);
+      max-width: 33%;*/
+    margin: 0 4px 20px 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .item .link_content {
+    padding-top: 125%;
+    position: relative;
+    border-radius: 5px;
+    display: flex;
+    width: 100%;
+    background-size: cover;
+  }
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 5px;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tag_group {
+    display: none;
+  }
+
+  .content_text_tag {
+    font-size: 11px !important;
+    color: rgb(221, 221, 221);
+    width: 96% !important;
+    max-height: 40px;
+    line-height: 20px;
+    padding: 2px 0 2px 0 !important;
+    text-align: left;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .cus_remark {
+    z-index: 10;
+    position: absolute;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    font-size: 8px;
+    color: #c2c2c2;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 0 0 5px 5px;
+  }
+}
+
+/*pc*/
+@media (min-width: 768px) {
+  .box-hover {
+    transform: scale(1.1);
+  }
+
+  .hot-tag {
+    position: absolute;
+    width: 75px;
+    height: 20px;
+    left: 0;
+  }
+
+  .c_content {
+    width: 100%;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-between;
+  }
+
+  .c_content .item {
+    margin-bottom: 30px;
+    transition: transform 0.3s;
+    box-sizing: border-box;
+  }
+
+  .item .link_content {
+    border-radius: 5px;
+    padding-top: 125%;
+    background-size: cover;
+    width: 100%;
+    display: flex;
+    position: relative;
+    margin-bottom: 5px;
+  }
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 5px;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tag_group {
+    position: absolute;
+    bottom: 3px;
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    overflow: hidden;
+    justify-content: start;
+    height: 18px;
+    z-index: 10;
+    line-height: 18px;
+    padding-left: 10px;
+  }
+
+  .cus_tag {
+    flex-shrink: 0; /* 不缩小元素 */
+    white-space: nowrap;
+    color: rgb(255, 255, 255);
+    padding: 0 3px;
+    margin-right: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    font-size: 12px;
+    border-radius: 5px;
+  }
+
+  .content_text_tag {
+    display: block;
+    font-size: 14px !important;
+    color: rgb(221, 221, 221);
+    width: 96% !important;
+    padding: 2px 10px 2px 2px !important;
+    text-align: left;
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .cus_remark {
+    display: block;
+    width: 100%;
+    padding-left: 3px;
+    font-size: 15px;
+    color: #ffffff;
+    text-align: left;
+  }
+}
+</style>
