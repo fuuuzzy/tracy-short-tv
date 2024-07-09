@@ -6,6 +6,7 @@
            @touchend="touchE">
         <el-carousel v-model="data.banner.current" ref="wrap" :pause-on-hover="false"
                      :interval="5000" trigger="hover"
+                     indicator-position="none"
                      height="200px" arrow="never">
           <el-carousel-item v-for="item in banners" :key="item">
             <el-image style="width: 100%; height: 100%; " :src="item.picture" fit="fill"/>
@@ -32,6 +33,7 @@
             </el-carousel-item>
           </el-carousel>
         </div>
+        <!--<img class="hot-tag" src="../../assets/image/img_tag_hot.png" alt="not found"/>-->
       </div>
       <!--影视-->
       <div class="content_item" v-for="item in data.info.content">
@@ -309,6 +311,11 @@ a {
 <!--轮播图双端样式-->
 <style scoped>
 @media (max-width: 768px) {
+  .content_item {
+    padding: 10px;
+    margin-bottom: 25px;
+  }
+
   :deep(.el-carousel) {
     --el-carousel-arrow-size: 30px;
     --el-carousel-arrow-background: rgba(115, 133, 159, 0.5);
@@ -353,7 +360,7 @@ a {
   }
 
   .banner_wrap {
-    margin: -15px 0 20px 0;
+    margin: -5px 0 0 0;
     position: relative;
     box-shadow: 0 5px 30px 0 rgba(255, 255, 255, 0.15);
   }
@@ -390,6 +397,13 @@ a {
 
 
 @media (min-width: 768px) {
+  .hot-tag {
+    position: absolute;
+    width: 120px !important;
+    height: 50px !important;
+    left: 0;
+  }
+
   :deep(.el-carousel) {
     --el-carousel-arrow-size: 30px;
     --el-carousel-arrow-background: rgba(115, 133, 159, 0.5);
