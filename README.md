@@ -13,7 +13,7 @@
 
 **网站功能**
 
-- 较[GoFilm](https://github.com/ProudMuBai/GoFilm)更加简易，适合短视频，目前只有首页和播放页
+- 较[GoFilm](https://github.com/ProudMuBai/GoFilm)更加简洁，适合短视频，目前只有首页和播放页
 - 历史观看
 - 默认访问地址: `服务器IP:默认端口 [http://127.0.0.1:3600]`
 
