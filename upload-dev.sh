@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #远程服务器ip或者别名
-REMOTE_SERVER=bp
+REMOTE_SERVER=be-power-cf
 #远程服务器目录
 TARGET_PATH=/opt/bepower-admin/video
 

@@ -43,8 +43,6 @@
                 }}
                 <img v-if="i >= data.detail.free" class="right_top" src="../../assets/image/icon_lock@2x.png" alt="">
               </a>
-              <span v-if="data.epCount > data.detail.list.length" style="pointer-events: none;" class="play-link">renewing...
-            </span>
             </div>
           </div>
         </div>
@@ -71,6 +69,7 @@ import RelateList from "../../components/index/RelateList.vue";
 // 播放源切换事件
 const changeTab = (id: string) => {
   data.currentTabId = id
+  playChange({sourceId: id, episodeIndex: data.current.episode - 1, target: null})
 }
 
 // 播放页所需数据
