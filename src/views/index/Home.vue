@@ -4,6 +4,17 @@
       <!--手机端-->
       <div class="hidden-sm-and-up banner_wrap" @touchstart="touchS" @click="getPlay(data.banner.current.id)"
            @touchend="touchE">
+        <!--<Swiper :initial-slide="0"-->
+        <!--        :modules='[Autoplay]' :loop='true' :speed='300' :spaceBetween='8' :mousewheel='true' :autoplay='{-->
+        <!--    delay: 3000,-->
+        <!--    disableOnInteraction: false,-->
+        <!--  }' slidesPerView="3" :centeredSlides='true'>-->
+        <!--  <SwiperSlide v-for="(_item, _index) in banners" :index="_index">-->
+        <!--    <div class="slotImage">-->
+        <!--      <el-image style="border-radius: 5px;width: 100%; height: 100%; " :src="_item.poster" fit="fill"/>-->
+        <!--    </div>-->
+        <!--  </SwiperSlide>-->
+        <!--</Swiper>-->
         <el-carousel v-model="data.banner.current" ref="wrap" :pause-on-hover="false"
                      :interval="5000" trigger="hover"
                      indicator-position="none"
@@ -57,6 +68,11 @@
 
 <script lang="ts" setup>
 // 顶部轮播图
+import "swiper/swiper-bundle.css";
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/navigation'
+
 import 'element-plus/theme-chalk/display.css'
 import {onBeforeMount, reactive, ref} from "vue";
 import FilmList from "../../components/index/FilmList.vue";
@@ -173,6 +189,15 @@ onBeforeMount(() => {
 </script>
 
 <style scoped>
+.slotImage {
+  width: 135px;
+  height: 230px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 2px;
+}
 
 .container {
   margin: 0 auto;

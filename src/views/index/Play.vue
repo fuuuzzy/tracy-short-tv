@@ -291,6 +291,16 @@ const getInfo = async (link: any) => {
       link: videoLinkSd
     })
   }
+  for (let i = episodeList.length + 1; i <= videoDetail.data.episode_count; i++) {
+    playList.push({
+      episode: i,
+      link: ""
+    })
+    playSdList.push({
+      episode: i,
+      link: ""
+    })
+  }
   const list: any = [{
     id: 1,
     name: "HD",
