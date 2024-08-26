@@ -5,12 +5,14 @@
         <video-player @mounted="playerMount" :src="data.options.src" :poster="data.detail.picture" controls
                       @ready="beforePlay"
                       @ended="isAutoPlay"
+                      @timeupdate="updateProgress"
                       :loop="false"
                       @keydown="handlePlay"
                       :bufferedPercent="30"
                       :volume="data.options.volume"
                       crossorigin="anonymous" playsinline class="video-player"
                       :playback-rates="[0.5, 1.0, 1.5, 2.0]"/>
+        <div class="adBox_max" ref="adContainer"></div>
       </div>
       <div class="current_play_info">
         <div class="play_info_left">
@@ -56,7 +58,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onBeforeMount, reactive} from "vue";
+import {computed, onBeforeMount, reactive, ref} from "vue";
 import {useRouter} from "vue-router";
 import {COOKIE_KEY_MAP, cookieUtil} from '../../utils/cookie'
 // 引入视频播放器组件
@@ -133,6 +135,133 @@ const hasNext = computed(() => {
   })
   return flag
 })
+let video = ref();
+let adsLoaded = ref(false);
+let adContainer = ref();
+let adDisplayContainer: any;
+let adsLoader: any;
+let adsManager: any
+const isExecuted = ref(false)
+
+const initializeIMA = () => {
+  google.ima.settings.setVpaidMode(google.ima.ImaSdkSettings.VpaidMode.ENABLED);
+  adDisplayContainer = new google.ima.AdDisplayContainer(adContainer.value);
+  adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+  adsLoader.addEventListener(
+      google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+      onAdsManagerLoaded,
+      false
+  );
+  adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError, false);
+
+  var adsRequest = new google.ima.AdsRequest();
+  adsRequest.adTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?" +
+      "iu=/21775744923/external/single_ad_samples&sz=640x480&" +
+      "cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&" +
+      "gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=";
+  adsLoader.requestAds(adsRequest);
+};
+
+const onAdsManagerLoaded = (adsManagerLoadedEvent: any) => {
+  // Instantiate the AdsManager from the adsLoader response and pass it the video element
+  adsManager = adsManagerLoadedEvent.getAdsManager(video);
+  adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+  // 广告暂停
+  adsManager.addEventListener(
+      google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED,
+      onContentPauseRequested
+  );
+  // 广告恢复
+  adsManager.addEventListener(
+      google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED,
+      onContentResumeRequested
+  );
+  // 非线性广告
+  adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, onAdLoaded);
+  // 用户点击广告
+  adsManager.addEventListener(google.ima.AdEvent.Type.CLICK, onAdClick);
+  // 在广告已准备好（无需缓冲）的情况下播放时（在广告开始时或缓冲完毕后）触发。
+  adsManager.addEventListener(google.ima.AdEvent.Type.AD_CAN_PLAY, onCanPlay);
+
+  loadAds();
+};
+const onContentPauseRequested = () => {
+  video.value.pause();
+};
+const onContentResumeRequested = () => {
+  setTimeout(() => {
+    isExecuted.value = false;
+  }, 2000);
+  adContainer.value.innerHTML = "";
+  adContainer.value.style.display = "none";
+  video.value.play()
+};
+const onAdError = (adErrorEvent: any) => {
+  let errorCode = adErrorEvent.getError().data.errorCode
+
+  setTimeout(() => {
+    isExecuted.value = false;
+  }, 2000);
+  adContainer.value.style.display = "none";
+  console.log(adErrorEvent.getError())
+  if (adsManager) {
+    adsManager.destroy();
+  }
+  adContainer.value.innerHTML = "";
+  video.value.play()
+};
+const loadAds = () => {
+  if (adsLoaded.value) {
+    return;
+  }
+  video.value.pause();
+  adsLoaded.value = true;
+  adDisplayContainer.initialize();
+  const width = video.clientWidth;
+  const height = video.clientHeight;
+  try {
+    adsManager.init(width, height, google.ima.ViewMode.NORMAL);
+    adsManager.start();
+    adsManager.setVolume(1);
+  } catch (adError) {
+    console.log("AdsManager could not be started");
+    video.value.play();
+  }
+};
+const onAdLoaded = (adEvent: any) => {
+  var ad = adEvent.getAd();
+  if (!ad.isLinear()) {
+    video.value.play();
+  }
+};
+const onAdClick = () => {
+
+};
+const onCanPlay = () => {
+
+};
+
+const playfun = () => {
+  // 判断广告是否加载
+  if (adsLoaded.value) {
+    adsLoaded.value = false;
+    initializeIMA();
+  } else {
+    initializeIMA();
+  }
+};
+
+// 播放进度
+const updateProgress = (ev: any) => {
+  // if (ev.target.player.cache_.currentTime) {
+  //   if ((Math.floor(ev.target.player.cache_.currentTime) == 0 && !isExecuted.value)) {
+  //     isExecuted.value = true;
+  //     adContainer.value.style.display = 'block'
+  //     video.value.pause();
+  //     playfun();
+  //   }
+  // }
+};
 
 // 获取路由信息
 const router = useRouter()
@@ -156,7 +285,7 @@ const playChange = (play: { sourceId: string, episodeIndex: number, target: any 
       data.currentTabId = play.sourceId
       if (data.autoplay) {
         setTimeout(() => {
-          document.getElementsByTagName("video")[0].play()
+          video.value.play()
         }, 1000)
       }
       return
@@ -226,6 +355,7 @@ const handleBtn = (e: any) => {
 const playerMount = (e: any) => {
   // 处理功能按钮相关事件
   handleBtn(e)
+  video.value = e.player
 }
 // player 准备就绪事件
 const beforePlay = (e: any) => {
@@ -371,7 +501,14 @@ onBeforeMount(() => {
   height: 100% !important;
   position: absolute;
   border-radius: 6px;
+}
 
+.adBox_max {
+  position: absolute;
+  display: none;
+  width: 100%;
+  height: 100%;
+  z-index: 999999999;
 }
 
 :deep(.vjs-big-play-button) {
